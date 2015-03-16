@@ -1,0 +1,357 @@
+// Kelley Stoll
+// Template file for BST
+
+#include <iostream>
+#include <assert.h>
+#include <fstream>
+#include <stdlib.h>
+
+using namespace std;
+
+
+//CONSTRUCTOR
+// Pre: None
+// Post: Root has be initialized
+template <class T>
+TreeType<T>::TreeType()
+{
+	root = NULL;
+
+}
+
+//DECONSTRUCTOR
+// Pre: Object exists
+// Post: Object is destroyed
+template <class T>
+TreeType<T>::~TreeType()
+{
+
+	Destroy(root);
+
+}
+
+// Pre: Object exists
+// Post: Used for deconstructor
+template <class T>
+void TreeType<T>::Destroy(TreeNode<T>*& tree)
+{
+	if (tree != NULL)
+	{
+		Destroy(tree->left);
+		Destroy(tree->right);
+		delete tree;
+	}
+
+
+}
+
+//COPY CONSTRUCTOR
+// Pre: None
+// Post: The tree is copied
+
+template <class T>
+TreeType<T>::TreeType(const TreeType& originalTree)
+{
+
+	CopyTree(root, originalTree.root);
+
+
+}
+
+// Pre: None
+// Post: Function is used for copy constructor
+template <class T>
+void TreeType<T>::CopyTree(TreeNode<T>*& copy, const TreeNode<T>* originalTree)
+{
+
+	if (originalTree == NULL)
+		copy = NULL;
+	else
+	{
+		copy = new TreeNode;
+		copy->data = originalTree->data;
+		CopyTree(copy->left, originalTree->left);
+		CopyTree(copy->right, originalTree->right);
+
+	}
+
+}
+
+
+//ASSIGNMENT OPERATOR
+// Pre: None
+// Post: Copies and destroys tree
+template <class T>
+void TreeType<T>::operator= (const TreeType& originalTree)
+{
+	{
+		if (&originalTree == this)
+		return;
+		Destroy(root);
+		CopyTree(root, originalTree.root);
+	}
+
+
+}
+
+// Pre: None
+// Post: Returns if tree is empty or not
+template <class T>
+bool TreeType<T>::IsEmpty() const
+{
+
+	return (root == NULL);
+
+}
+
+// Pre: None
+// Post: Returns if tree is full or not
+template <class T>
+bool TreeType<T>::IsFull() const
+{
+	TreeNode<T>* ptr;
+	ptr = new TreeNode<T>();
+
+	if (ptr == NULL)
+		return true;
+	else
+	{
+		delete ptr; // Do not want memory leak.. therefore delete pointer.
+		return false;
+	}
+
+}
+
+// Pre: Needs to have content
+// Post: Deletes content and makes tree empty
+template <class T>
+void TreeType<T>::MakeEmpty()
+{
+	root = NULL;
+
+}
+
+// Pre: A tree must exist
+// Post: Inserts item in tree (uses Insert function)
+template <class T>
+void TreeType<T>::PutItem(T item)
+{
+
+	Insert(root, item);
+
+
+}
+
+// Pre: A tree must exist
+// Post: Inserts an item in tree
+template <class T>
+void TreeType<T>::Insert(TreeNode<T>*& tree, T item)
+{
+
+	if (tree == NULL)
+	{
+
+		tree = new TreeNode<T>;
+		tree->right = NULL;
+		tree->left = NULL;
+		tree->data = item;
+
+	}
+
+	else if (item < tree->data)
+		Insert(tree->left, item);
+	else
+		Insert(tree->right, item);
+
+
+
+}
+
+// Pre: Must be a tree with content
+// Post: Returns item if present (uses retrieve)
+template <class T>
+T TreeType<T>::GetItem(T item)
+{
+
+	Retrieve(root, item);
+	return item;
+
+}
+
+// Pre: Must be a tree with content
+// Post: Returns item if present
+template <class T>
+void TreeType<T>::Retrieve(TreeNode<T>* tree, T& item)
+{
+	if (tree == NULL)
+		item = false; // Item is not found
+	else if (item < tree->data)
+		Retrieve(tree->left, item); // Search left subtree
+	else if (item > tree->data)
+		Retrieve(tree->right, item); // Search right subtree
+	else
+	{
+		item = tree->data;
+		item = true; // Item is found
+	}
+}
+
+// Pre: Must have a root/ Tree must exist
+// Post: Returns the root of the tree
+template <class T>
+T TreeType<T>::getRootData() const
+{
+	assert(!IsEmpty()); // Cannot be empty
+	return (root->data);
+
+}
+
+// Pre: Tree must be initialized
+// Post: Returns the size of tree (number of nodes)
+template <class T>
+unsigned int TreeType<T>::LengthIs()
+{
+	return CountNodes(root);
+
+}
+
+// Pre: A tree must be created and initialized
+// Post: Counts the number of nodes and is used in function LengthIs
+template <class T>
+T TreeType<T>::CountNodes(TreeNode<T>* tree)
+{
+
+	if (tree == NULL)
+		return 0;
+	else
+		return CountNodes(tree->left) + CountNodes(tree->right) + 1;
+
+}
+
+// Pre: Content must exist in a tree
+// Post: Deletes specific item(s) in tree
+template <class T>
+void TreeType<T>::Delete(TreeNode<T>*& tree, T item)
+{
+
+	if (item < tree->data)
+		Delete(tree->left, item); // Look in left subtree
+	else if (item > tree->data)
+		Delete(tree->right, item); // Look in right subtree
+	else
+		DeleteNode(tree); // Node found; call DeleteNode
+
+
+}
+
+// Pre: Content must exist in a tree
+// Post: Deletes a specific node(s) in a tree
+template <class T>
+void TreeType<T>::DeleteNode(TreeNode<T>*& tree)
+{
+	T info;
+	TreeNode<T>* tempPtr;
+
+	tempPtr = tree;
+	if (tree->left == NULL)
+	{
+		tree = tree->right;
+		delete tempPtr;
+
+	}
+
+	else if (tree->right == NULL)
+	{
+		tree = tree->left;
+		delete tempPtr;
+
+	}
+
+	else
+	{
+		GetPredecessor(tree->left, info);
+		tree->data = info;
+		Delete(tree->left, info); // Delete predecessor node
+
+
+	}
+
+
+
+}
+
+// Pre: Content must exist in tree
+// Post: Deletes specific item in tree (Uses other delete functions)
+template <class T>
+void TreeType<T>::DeleteItem(T item)
+{
+
+	Delete(root, item);
+
+
+}
+
+// Pre: Tree must have content
+// Post: Used for making sure content is in order
+template <class T>
+void TreeType<T>::GetPredecessor(TreeNode<T>* tree, T& info)
+{
+	while (tree->right != NULL)
+	{
+
+		tree = tree->right;
+		info = tree->data;
+
+	}
+
+}
+
+
+// Pre: None
+// Post: Prints tree with current data
+template <class T>
+void TreeType<T>::print() const
+{
+	print(root, 0);
+}
+
+// Pre: None
+// Post: Prints tree with current data
+template <class T>
+void TreeType<T>::print(TreeNode<T>* node, int depth) const
+{
+	if (node == NULL)
+	{
+		std::cout << std::endl;
+		return;
+	}
+
+	print(node->right, depth + 1);
+	for (int i = 0; i < depth; i++)
+	{
+		std::cout << "\t";
+	}
+	std::cout << node->data << std::endl;
+	print(node->left, depth + 1);
+}
+
+
+
+// Pre: None
+// Post: Allows user to interact with menu
+void PrintMenu()
+{
+	cout << endl << endl;
+	cout << "The following choices are available: " << endl;
+	cout << " P   Print Binary Search Tree" << endl;
+	cout << " C   Clear contents of Tree" << endl;
+	cout << " E   Check to see if Tree is empty" << endl;
+	cout << " F   Check to see if Tree is full" << endl;
+	cout << " S   Return size of the Tree" << endl;
+	cout << " L   Look to see if element is in Tree" << endl;
+	cout << " R   Retrieve root data of Tree" << endl;
+	cout << " A   Add element into Tree" << endl;
+	cout << " D   Delete element in Tree" << endl;
+	cout << " Q   Exit the program" << endl;
+
+}
